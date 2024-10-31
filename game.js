@@ -261,10 +261,8 @@ document.addEventListener('keydown', (event) => {
             birdVelocity = 0; // Start with zero velocity
             update();
         } else if (!gameOver) {
-            // Only apply flap if the bird isn't moving up too fast
-            if (birdVelocity > maxUpwardVelocity) {
-                birdVelocity = -flapStrength;
-            }
+            // Remove the velocity check and always apply flap
+            birdVelocity = -flapStrength;
         } else {
             // Reset game
             gameStarted = true;
