@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Flying Bird - WebGL Game</title>
+    <style>
+        canvas {
+            border: 2px solid black;
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Flying Bird Game</h1>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <div id="debug">Canvas should appear above this text</div>
+    
+    <!-- Add this line to verify script loading -->
+    <script>console.log('Page loaded');</script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.8.1/gl-matrix-min.js"></script>
+    <script src="game.js"></script>
+</body>
+</html> 
