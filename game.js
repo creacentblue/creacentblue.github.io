@@ -70,10 +70,10 @@ let score = 0;
 let birdY = 0.0;
 let birdVelocity = 0.0;
 const gravity = 0.0008;
-const flapStrength = 0.03;
+const flapStrength = 0.015;
 
 // Add maximum velocity to prevent too fast movement
-const maxUpwardVelocity = -0.06;
+const maxUpwardVelocity = -0.03;
 const maxDownwardVelocity = 0.08;
 const terminalVelocity = 0.15;
 
