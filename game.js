@@ -69,11 +69,13 @@ let score = 0;
 // Bird properties
 let birdY = 0.0;
 let birdVelocity = 0.0;
-const gravity = 0.0015;
-const flapStrength = 0.08;
+const gravity = 0.0008;
+const flapStrength = 0.03;
 
 // Add maximum velocity to prevent too fast movement
-const maxVelocity = 0.15;
+const maxUpwardVelocity = -0.06;
+const maxDownwardVelocity = 0.08;
+const terminalVelocity = 0.15;
 
 // Pipe properties
 const pipeWidth = 0.2;
@@ -211,18 +213,28 @@ function update() {
         return;
     }
 
+    // Apply gravity
     birdVelocity += gravity;
     
-    // Limit the maximum velocity in both directions
-    birdVelocity = Math.max(Math.min(birdVelocity, maxVelocity), -maxVelocity);
+    // Limit velocities
+    if (birdVelocity < maxUpwardVelocity) {
+        birdVelocity = maxUpwardVelocity;
+    }
+    if (birdVelocity > maxDownwardVelocity) {
+        birdVelocity = maxDownwardVelocity;
+    }
     
+    // Update position
     birdY += birdVelocity;
 
+    // Ground collision
     if (birdY < -0.9) {
         birdY = -0.9;
         birdVelocity = 0;
         gameOver = true;
     }
+    
+    // Ceiling collision
     if (birdY > 0.9) {
         birdY = 0.9;
         birdVelocity = 0;
@@ -241,22 +253,29 @@ function update() {
 // Handle keyboard input
 document.addEventListener('keydown', (event) => {
     if (event.code === 'Space') {
+        event.preventDefault(); // Prevent page scrolling
+        
         if (!gameStarted) {
             gameStarted = true;
             initPipes();
+            birdVelocity = 0; // Start with zero velocity
             update();
         } else if (!gameOver) {
-            birdVelocity = -flapStrength;
+            // Only apply flap if the bird isn't moving up too fast
+            if (birdVelocity > maxUpwardVelocity) {
+                birdVelocity = -flapStrength;
+            }
         } else {
+            // Reset game
             gameStarted = true;
             gameOver = false;
             score = 0;
             birdY = 0.0;
             birdVelocity = 0.0;
+            pipes = [];
             initPipes();
             update();
         }
-        event.preventDefault();
     }
 });
 
