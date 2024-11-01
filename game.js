@@ -84,7 +84,11 @@ let pipes = [];
 const pipeSpeed = 0.005;
 
 function createPipe() {
-    const gapPosition = Math.random() * 1.2 - 0.6;
+    // Limit the gap position to prevent impossible pipes
+    const minGapY = -0.4;  // Minimum gap position
+    const maxGapY = 0.4;   // Maximum gap position
+    const gapPosition = Math.random() * (maxGapY - minGapY) + minGapY;
+    
     return {
         x: 1.2,
         gapY: gapPosition,
@@ -99,16 +103,22 @@ function initPipes() {
 function updatePipes() {
     for (let i = pipes.length - 1; i >= 0; i--) {
         pipes[i].x -= pipeSpeed;
+        
+        // Remove pipes that are completely off screen
         if (pipes[i].x < -1.2) {
             pipes.splice(i, 1);
-        } else if (!pipes[i].passed && pipes[i].x < 0) {
+            continue;
+        }
+        
+        // Score update
+        if (!pipes[i].passed && pipes[i].x < -0.1) {  // Changed from 0 to -0.1
             score++;
             pipes[i].passed = true;
-            console.log('Score:', score);
         }
     }
 
-    if (pipes[pipes.length - 1].x < 0.5) {
+    // Add new pipe when the last pipe moves sufficiently to the left
+    if (pipes.length === 0 || pipes[pipes.length - 1].x < 0.5) {
         pipes.push(createPipe());
     }
 }
@@ -228,9 +238,11 @@ function drawBird() {
 
 function checkCollision() {
     // Bird hitbox (slightly smaller than visual size for better gameplay feel)
-    const birdRadius = 0.08;
+    const birdRadius = 0.06;  // Reduced from 0.08 for more forgiving collisions
     const birdLeft = -birdSize * 0.8;
     const birdRight = birdSize * 0.2;
+    const birdTop = birdY + birdRadius;
+    const birdBottom = birdY - birdRadius;
 
     // Ground and ceiling collision
     if (birdY < -0.9 || birdY > 0.9) {
@@ -239,18 +251,20 @@ function checkCollision() {
 
     // Pipe collision with more precise hitbox
     for (const pipe of pipes) {
-        // Only check pipes that are near the bird
-        if (pipe.x + pipeWidth/2 < birdLeft - 0.1 || pipe.x - pipeWidth/2 > birdRight + 0.1) {
+        // Only check pipes that are near the bird horizontally
+        const pipeLeft = pipe.x - pipeWidth/2;
+        const pipeRight = pipe.x + pipeWidth/2;
+        
+        if (pipeRight < birdLeft || pipeLeft > birdRight) {
             continue;
         }
 
-        // Check upper pipe
-        if (birdY + birdRadius > pipe.gapY + pipeGap/2) {
-            return true;
-        }
+        // Get pipe gap boundaries
+        const gapTop = pipe.gapY + pipeGap/2;
+        const gapBottom = pipe.gapY - pipeGap/2;
 
-        // Check lower pipe
-        if (birdY - birdRadius < pipe.gapY - pipeGap/2) {
+        // Check
+        if (birdTop > gapTop || birdBottom < gapBottom) {
             return true;
         }
     }
