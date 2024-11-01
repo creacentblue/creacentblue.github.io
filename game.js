@@ -435,12 +435,27 @@ window.addEventListener('resize', resizeCanvas);
 
 // Optional: Add score display
 function drawScore() {
-    const scoreDiv = document.getElementById('instructions');
+    const scoreDiv = document.getElementById('score');
     scoreDiv.textContent = gameOver ? 
-        `Game Over! Score: ${score}. Tap to restart!` : 
+        `Game Over! Final Score: ${score}` : 
         `Score: ${score}`;
+    
+    if (gameOver) {
+        document.getElementById('final-score').textContent = score;
+        document.querySelector('.game-over').classList.add('visible');
+    }
 }
 
 // Initial draw
 gl.useProgram(shaderProgram);
 drawScene();
+
+// Add this at the end of your game.js file
+window.addEventListener('load', () => {
+    document.querySelector('.loading').style.display = 'none';
+});
+
+function restartGame() {
+    document.querySelector('.game-over').classList.remove('visible');
+    // Your existing reset game logic here
+}
