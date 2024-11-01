@@ -69,13 +69,13 @@ let score = 0;
 // Bird properties
 let birdY = 0.0;
 let birdVelocity = 0.0;
-const gravity = 0.0008;
-const flapStrength = -0.015;
+const gravity = -0.0008;
+const flapStrength = 0.015;
 
 // Add maximum velocity to prevent too fast movement
-const maxUpwardVelocity = -0.03;
-const maxDownwardVelocity = 0.08;
-const terminalVelocity = 0.15;
+const maxUpwardVelocity = 0.03;
+const maxDownwardVelocity = -0.08;
+const terminalVelocity = -0.15;
 
 // Pipe properties
 const pipeWidth = 0.2;
@@ -333,10 +333,10 @@ function update() {
     birdVelocity += gravity;
     
     // Limit velocities
-    if (birdVelocity < maxUpwardVelocity) {
+    if (birdVelocity > maxUpwardVelocity) {
         birdVelocity = maxUpwardVelocity;
     }
-    if (birdVelocity > maxDownwardVelocity) {
+    if (birdVelocity < maxDownwardVelocity) {
         birdVelocity = maxDownwardVelocity;
     }
     
