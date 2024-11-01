@@ -160,22 +160,70 @@ function drawPipe(x, gapY) {
     drawShape(lowerPositions, colors);
 }
 
+// Add these new constants for the bird
+const birdSize = 0.1;
+const wingAmplitude = 0.03; // How much the wings move
+let wingOffset = 0; // For wing animation
+
+// Replace the drawBird function with this new version
 function drawBird() {
-    const positions = [
-        -0.1, birdY + 0.1,
-         0.1, birdY + 0.1,
-         0.1, birdY - 0.1,
-        -0.1, birdY - 0.1,
+    // Bird body (oval shape)
+    const bodyPositions = [
+        -birdSize, birdY,  // Center point
+    ];
+    
+    // Create circular body with more vertices
+    const segments = 12;
+    for (let i = 0; i <= segments; i++) {
+        const angle = (i / segments) * Math.PI * 2;
+        bodyPositions.push(
+            -birdSize + Math.cos(angle) * birdSize * 0.8,
+            birdY + Math.sin(angle) * birdSize * 0.6
+        );
+    }
+
+    // Wing position varies with time for animation
+    wingOffset = Math.sin(Date.now() / 100) * wingAmplitude;
+    
+    // Wing (triangle shape)
+    const wingPositions = [
+        -birdSize * 0.5, birdY,
+        -birdSize * 0.8, birdY + wingOffset,
+        -birdSize * 0.2, birdY + wingOffset * 0.5
     ];
 
-    const colors = [
-        1.0, 1.0, 0.0, 1.0,
-        1.0, 1.0, 0.0, 1.0,
-        1.0, 1.0, 0.0, 1.0,
-        1.0, 1.0, 0.0, 1.0,
+    // Colors
+    const bodyColors = [];
+    for (let i = 0; i <= segments + 1; i++) {
+        bodyColors.push(1.0, 0.8, 0.0, 1.0); // Golden yellow
+    }
+
+    const wingColors = [
+        0.9, 0.7, 0.0, 1.0,
+        0.9, 0.7, 0.0, 1.0,
+        0.9, 0.7, 0.0, 1.0
     ];
 
-    drawShape(positions, colors);
+    // Draw body
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(bodyPositions), gl.STATIC_DRAW);
+    gl.vertexAttribPointer(programInfo.attribLocations.vertexPosition, 2, gl.FLOAT, false, 0, 0);
+    
+    const colorBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(bodyColors), gl.STATIC_DRAW);
+    gl.vertexAttribPointer(programInfo.attribLocations.vertexColor, 4, gl.FLOAT, false, 0, 0);
+    
+    gl.drawArrays(gl.TRIANGLE_FAN, 0, segments + 2);
+
+    // Draw wing
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(wingPositions), gl.STATIC_DRAW);
+    gl.vertexAttribPointer(programInfo.attribLocations.vertexPosition, 2, gl.FLOAT, false, 0, 0);
+    
+    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(wingColors), gl.STATIC_DRAW);
+    gl.vertexAttribPointer(programInfo.attribLocations.vertexColor, 4, gl.FLOAT, false, 0, 0);
+    
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
 }
 
 function checkCollision() {
@@ -190,11 +238,76 @@ function checkCollision() {
     return false;
 }
 
+// Add background elements
+let clouds = [];
+const numClouds = 5;
+
+function initClouds() {
+    clouds = [];
+    for (let i = 0; i < numClouds; i++) {
+        clouds.push({
+            x: Math.random() * 2 - 1,
+            y: Math.random() * 1.6 - 0.8,
+            size: Math.random() * 0.2 + 0.1,
+            speed: Math.random() * 0.001 + 0.001
+        });
+    }
+}
+
+function drawCloud(x, y, size) {
+    const positions = [];
+    const segments = 32;
+    const numCircles = 3;
+    
+    // Create multiple overlapping circles for cloud shape
+    for (let c = 0; c < numCircles; c++) {
+        const offsetX = (c - 1) * size * 0.5;
+        for (let i = 0; i <= segments; i++) {
+            const angle = (i / segments) * Math.PI * 2;
+            positions.push(
+                x + offsetX + Math.cos(angle) * size,
+                y + Math.sin(angle) * size * 0.6
+            );
+        }
+    }
+
+    const colors = new Array((segments + 1) * numCircles * 4).fill(1.0);
+
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+    gl.vertexAttribPointer(programInfo.attribLocations.vertexPosition, 2, gl.FLOAT, false, 0, 0);
+    
+    const colorBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+    gl.vertexAttribPointer(programInfo.attribLocations.vertexColor, 4, gl.FLOAT, false, 0, 0);
+    
+    gl.drawArrays(gl.TRIANGLE_FAN, 0, (segments + 1) * numCircles);
+}
+
+function updateClouds() {
+    clouds.forEach(cloud => {
+        cloud.x -= cloud.speed;
+        if (cloud.x < -1.2) {
+            cloud.x = 1.2;
+            cloud.y = Math.random() * 1.6 - 0.8;
+        }
+    });
+}
+
 function drawScene() {
+    // Sky gradient (light blue to darker blue)
     gl.clearColor(0.53, 0.81, 0.92, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
 
+    // Draw clouds
+    clouds.forEach(cloud => {
+        drawCloud(cloud.x, cloud.y, cloud.size);
+    });
+
+    // Draw pipes
     pipes.forEach(pipe => drawPipe(pipe.x, pipe.gapY));
+    
+    // Draw bird
     drawBird();
 }
 
@@ -207,6 +320,9 @@ const programInfo = {
         vertexColor: gl.getAttribLocation(shaderProgram, 'aVertexColor'),
     },
 };
+
+// Initialize clouds when the game starts
+initClouds();
 
 function update() {
     if (!gameStarted || gameOver) {
@@ -245,6 +361,8 @@ function update() {
     if (checkCollision()) {
         gameOver = true;
     }
+
+    updateClouds();
 
     drawScore();
     
