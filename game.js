@@ -227,14 +227,34 @@ function drawBird() {
 }
 
 function checkCollision() {
-    const birdRadius = 0.1;
+    // Bird hitbox (slightly smaller than visual size for better gameplay feel)
+    const birdRadius = 0.08;
+    const birdLeft = -birdSize * 0.8;
+    const birdRight = birdSize * 0.2;
+
+    // Ground and ceiling collision
+    if (birdY < -0.9 || birdY > 0.9) {
+        return true;
+    }
+
+    // Pipe collision with more precise hitbox
     for (const pipe of pipes) {
-        if (Math.abs(pipe.x) < birdRadius + pipeWidth/2) {
-            if (birdY < pipe.gapY - pipeGap/2 || birdY > pipe.gapY + pipeGap/2) {
-                return true;
-            }
+        // Only check pipes that are near the bird
+        if (pipe.x + pipeWidth/2 < birdLeft - 0.1 || pipe.x - pipeWidth/2 > birdRight + 0.1) {
+            continue;
+        }
+
+        // Check upper pipe
+        if (birdY + birdRadius > pipe.gapY + pipeGap/2) {
+            return true;
+        }
+
+        // Check lower pipe
+        if (birdY - birdRadius < pipe.gapY - pipeGap/2) {
+            return true;
         }
     }
+
     return false;
 }
 
@@ -343,26 +363,16 @@ function update() {
     // Update position
     birdY += birdVelocity;
 
-    // Ground collision
-    if (birdY < -0.9) {
-        birdY = -0.9;
-        birdVelocity = 0;
+    // Check collisions
+    if (checkCollision()) {
         gameOver = true;
-    }
-    
-    // Ceiling collision
-    if (birdY > 0.9) {
-        birdY = 0.9;
+        // Add impact effect
         birdVelocity = 0;
+        return;
     }
 
     updatePipes();
     updateClouds();
-    
-    if (checkCollision()) {
-        gameOver = true;
-    }
-
     drawScore();
     drawScene();
     requestAnimationFrame(update);
