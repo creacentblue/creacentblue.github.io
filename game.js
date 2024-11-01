@@ -246,6 +246,8 @@ function update() {
         gameOver = true;
     }
 
+    drawScore();
+    
     drawScene();
     requestAnimationFrame(update);
 }
@@ -275,6 +277,51 @@ document.addEventListener('keydown', (event) => {
         }
     }
 });
+
+// Add touch event handlers after your keyboard event handler
+canvas.addEventListener('touchstart', (event) => {
+    event.preventDefault(); // Prevent default touch behaviors
+    
+    if (!gameStarted) {
+        gameStarted = true;
+        initPipes();
+        birdVelocity = 0;
+        update();
+    } else if (!gameOver) {
+        birdVelocity = flapStrength;
+    } else {
+        // Reset game
+        gameStarted = true;
+        gameOver = false;
+        score = 0;
+        birdY = 0.0;
+        birdVelocity = 0.0;
+        pipes = [];
+        initPipes();
+        update();
+    }
+}, { passive: false });
+
+// Add resize handler to make the canvas responsive
+function resizeCanvas() {
+    const displayWidth = Math.min(800, window.innerWidth - 40); // 40px for padding
+    const scale = displayWidth / canvas.width;
+    
+    canvas.style.width = `${displayWidth}px`;
+    canvas.style.height = `${canvas.height * scale}px`;
+}
+
+// Call resize on load and window resize
+window.addEventListener('load', resizeCanvas);
+window.addEventListener('resize', resizeCanvas);
+
+// Optional: Add score display
+function drawScore() {
+    const scoreDiv = document.getElementById('instructions');
+    scoreDiv.textContent = gameOver ? 
+        `Game Over! Score: ${score}. Tap to restart!` : 
+        `Score: ${score}`;
+}
 
 // Initial draw
 gl.useProgram(shaderProgram);

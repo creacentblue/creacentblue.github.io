@@ -2,21 +2,41 @@
 <html>
 <head>
     <title>Flying Bird - WebGL Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            touch-action: none; /* Prevents default touch behaviors */
+        }
+
         canvas {
             border: 2px solid black;
             display: block;
             margin: 0 auto;
+            max-width: 100%;
+            height: auto;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 24px;
+        }
+
+        #instructions {
+            text-align: center;
+            margin: 10px 0;
+            font-size: 16px;
         }
     </style>
 </head>
 <body>
     <h1>Flying Bird Game</h1>
+    <div id="instructions">Tap screen or press SPACE to play!</div>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
-    <div id="debug">Canvas should appear above this text</div>
-    
-    <!-- Add this line to verify script loading -->
-    <script>console.log('Page loaded');</script>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.8.1/gl-matrix-min.js"></script>
     <script src="game.js"></script>
